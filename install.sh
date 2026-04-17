@@ -2,7 +2,7 @@
 ## [un]veil — one-command installer
 ##
 ## Usage:
-##   curl -fsSL https://raw.githubusercontent.com/own-path/unveil/main/install.sh | bash
+##   curl -fsSL https://raw.githubusercontent.com/own-path/unveil-public/main/install.sh | bash
 ##
 ## What it does:
 ##   1. Detects your platform (macOS arm64/x64, Linux x64/arm64)
@@ -13,7 +13,7 @@
 
 set -euo pipefail
 
-REPO="${UNVEIL_REPO:-own-path/unveil}"   # Public repo with releases
+REPO="${UNVEIL_REPO:-own-path/unveil-public}"   # Public repo with releases
 INSTALL_DIR="${UNVEIL_INSTALL_DIR:-$HOME/.local/bin}"
 UNVEIL_HOME="${UNVEIL_HOME:-$HOME/.unveil}"
 
