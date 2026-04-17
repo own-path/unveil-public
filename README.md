@@ -1,5 +1,3 @@
-<div align="center">
-
 ```
  ███╗██╗   ██╗███╗   ██╗███╗██╗   ██╗███████╗██╗██╗
  ██╔╝██║   ██║████╗  ██║╚██║██║   ██║██╔════╝██║██║
@@ -12,8 +10,6 @@
 **Lifting the veil on multilingual model internals.**
 
 [un]veil is an autonomous AI-powered research terminal for mechanistic interpretability. It loads transformer models locally, probes their internals, runs experiments, and writes papers — with minimal human involvement.
-
-</div>
 
 ---
 
