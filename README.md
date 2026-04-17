@@ -1,27 +1,31 @@
+<div align="center">
+
 ```
- ██╗   ██╗███╗   ██╗ ██╗   ██╗███████╗██╗██╗
- ██║   ██║████╗  ██║ ██║   ██║██╔════╝██║██║
- ██║   ██║██╔██╗ ██║ ██║   ██║█████╗  ██║██║
- ██║   ██║██║╚██╗██║ ╚██╗ ██╔╝██╔══╝  ██║██║
- ╚██████╔╝██║ ╚████║  ╚████╔╝ ███████╗██║███████╗
-  ╚═════╝ ╚═╝  ╚═══╝   ╚═══╝  ╚══════╝╚═╝╚══════╝
+ ███╗██╗   ██╗███╗   ██╗███╗ ██╗   ██╗███████╗██╗██╗
+ ██╔╝██║   ██║████╗  ██║╚██║ ██║   ██║██╔════╝██║██║
+ ██║ ██║   ██║██╔██╗ ██║ ██║ ██║   ██║█████╗  ██║██║
+ ██║ ██║   ██║██║╚██╗██║ ██║ ╚██╗ ██╔╝██╔══╝  ██║██║
+ ███╗╚██████╔╝██║ ╚████║███║  ╚████╔╝ ███████╗██║███████╗
+ ╚══╝ ╚═════╝ ╚═╝  ╚═══╝╚══╝  ╚═══╝  ╚══════╝╚═╝╚══════╝
 ```
+
+<sub>By 4thWall Labs</sub>
 
 **Lifting the veil on multilingual model internals.**
 
 [un]veil is an autonomous AI-powered research terminal for mechanistic interpretability. It loads transformer models locally, probes their internals, runs experiments, and writes papers — with minimal human involvement.
 
-> Built by **4thWall Labs**
+</div>
 
 ---
 
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/own-path/unveil/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/own-path/unveil-public/main/install.sh | bash
 ```
 
-Or download the archive for your platform from [Releases](https://github.com/own-path/unveil/releases) and run `install.sh` manually.
+Or download the archive for your platform from [Releases](https://github.com/own-path/unveil-public/releases) and run `install.sh` manually.
 
 ### Platforms
 
