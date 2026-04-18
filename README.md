@@ -83,26 +83,6 @@ unveil
 /help
 ```
 
-## How it works
-
-[un]veil combines three layers:
-
-1. **Agent loop** — An LLM-driven reasoning loop with parallel tool execution, sub-agent spawning, and structured experiment tracking.
-2. **Rust daemons** — Native binaries for session persistence (SQLite), process management, and Python IPC.
-3. **Python ML runtime** — TransformerLens-based toolkit for probes, activation patching, sparse autoencoders, and logit lens.
-
-### Architecture
-
-![Master architecture](docs/diagrams/01-master.svg)
-
-Detail diagrams: [bootstrap](docs/diagrams/02-bootstrap.svg) · [agent loop](docs/diagrams/03-agent-loop.svg) · [tool layer](docs/diagrams/04-tools.svg) · [persistence](docs/diagrams/05-persistence.svg) · [process topology](docs/diagrams/06-process-topology.svg).
-
-The agent follows a rigorous experimental protocol:
-```
-Observe → Measure → Generalize → Intervene → Behavioral test → Rule out alternatives
-```
-Findings require L4+ causal evidence. No hand-waving.
-
 ## Commands
 
 | Command | Description |
@@ -123,7 +103,7 @@ Findings require L4+ causal evidence. No hand-waving.
 | `/cron` | Fire agent on a repeating interval (e.g. `30m`, `1h`) |
 | `/watch` | Fire agent when a file changes |
 | `/triggers` | List active triggers |
-| `/daemon` | Install / manage background Rust daemons |
+| `/daemon` | Install / manage background services |
 | `/wizard` | Full setup check with fix instructions |
 | `/skills` | List / install / invoke skill extensions |
 | `/doctor` | Health check |
