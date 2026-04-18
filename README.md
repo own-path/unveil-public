@@ -49,13 +49,17 @@ Or download the archive for your platform from [Releases](https://github.com/own
 ### Key features
 
 - **Autonomous research** — Run N experiments without human input. Background mode lets you keep working while experiments stream results live.
-- **Web search** — Grounded in current literature. ArXiv search for papers.
+- **Web search** — Grounded in current literature. 3-tier fallback: Anthropic native → Tavily → DuckDuckGo. ArXiv search for papers.
 - **Hardware-aware model loading** — Detects your RAM/VRAM and loads compatible models automatically.
 - **Multi-provider** — Anthropic, OpenAI, Google, Cerebras, or your own local/Tailscale server.
 - **20+ themes** — Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Rose Pine, and more.
 - **Session persistence** — Save, resume, and fork research sessions.
 - **Paper generation** — Export findings as ArXiv-ready LaTeX.
 - **Mid-run steering** — Inject instructions while the agent is thinking.
+- **Triggers** — `/cron` and `/watch` fire the agent automatically on a schedule or when a file changes.
+- **Skills** — Installable slash-command extensions. Prompt-based (`~/.unveil/skills/*.md`) or code-based (directory with `skill.json`).
+- **MCP server** — Expose all [un]veil tools to any MCP-compatible client (`veil-mcp` binary, stdio transport).
+- **Setup wizard** — `/wizard` checks every dependency and prints exact fix instructions.
 
 ## Usage
 
@@ -110,6 +114,12 @@ Findings require L4+ causal evidence. No hand-waving.
 | `/write-paper` | Generate ArXiv-ready paper |
 | `/commit` | AI commit message + git commit |
 | `/review` | AI code review |
+| `/cron` | Fire agent on a repeating interval (e.g. `30m`, `1h`) |
+| `/watch` | Fire agent when a file changes |
+| `/triggers` | List active triggers |
+| `/daemon` | Install / manage background Rust daemons |
+| `/wizard` | Full setup check with fix instructions |
+| `/skills` | List / install / invoke skill extensions |
 | `/doctor` | Health check |
 | `/help` | Full command reference |
 
