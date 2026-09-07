@@ -125,10 +125,18 @@ main() {
         die "cosign signature verification FAILED — aborting install."
       fi
     else
-      warn "Could not fetch .sig/.pem — skipping verification."
+      if [ "${UNVEIL_REQUIRE_SIGNATURE:-0}" = "1" ]; then
+        die "No signature published for ${archive} and UNVEIL_REQUIRE_SIGNATURE=1 — aborting."
+      fi
+      warn "!! No .sig/.pem published for this release — INSTALLING UNVERIFIED."
+      warn "!! Releases from v2026.9.7 onward publish signatures; an older tag has none."
+      warn "!! Set UNVEIL_REQUIRE_SIGNATURE=1 to refuse unverified installs."
     fi
   else
-    warn "cosign not on PATH — skipping signature verification."
+    if [ "${UNVEIL_REQUIRE_SIGNATURE:-0}" = "1" ]; then
+      die "cosign not on PATH and UNVEIL_REQUIRE_SIGNATURE=1 — aborting."
+    fi
+    warn "cosign not on PATH — INSTALLING UNVERIFIED."
     warn "Install cosign (https://docs.sigstore.dev/cosign/installation) for verified installs."
   fi
 

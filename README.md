@@ -7,111 +7,154 @@
  ╚══╝ ╚═════╝ ╚═╝  ╚═══╝╚══╝ ╚═══╝  ╚══════╝╚═╝╚══════╝
 ```
 
-**Lifting the veil on multilingual model internals.**
+**An autonomous research terminal for mechanistic interpretability.**
 
-[un]veil is an autonomous AI-powered research terminal for mechanistic interpretability. It loads transformer models locally, probes their internals, runs experiments, and writes papers — with minimal human involvement.
+[un]veil loads transformer models, runs experiments on their internals, and writes up the results — with minimal human involvement.
 
 ---
 
 ## Install
 
+One-line install for macOS and Linux:
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/own-path/unveil-public/main/install.sh | bash
 ```
 
-Or download the archive for your platform from [Releases](https://github.com/own-path/unveil-public/releases) and run `install.sh` manually.
+The installer picks the right archive for your platform, verifies the signature (if `cosign` is on your PATH), extracts to `~/.local/share/unveil/`, and symlinks the `unveil` binary into `~/.local/bin/`.
+
+Alternatively, download the archive manually from [Releases](https://github.com/own-path/unveil-public/releases) and run the bundled `install.sh`.
 
 ### Platforms
 
-| Platform | Archive |
-|----------|---------|
-| macOS Apple Silicon (M1/M2/M3/M4) | `unveil-vX.Y.Z-darwin-arm64.tar.gz` |
-| macOS Intel | `unveil-vX.Y.Z-darwin-x64.tar.gz` |
-| Linux x86_64 | `unveil-vX.Y.Z-linux-x64.tar.gz` |
-| Linux arm64 | `unveil-vX.Y.Z-linux-arm64.tar.gz` |
+| Platform                          | Archive                              |
+|-----------------------------------|--------------------------------------|
+| macOS Apple Silicon (M1–M4)       | `unveil-vX.Y.Z-darwin-arm64.tar.gz`  |
+| macOS Intel                       | `unveil-vX.Y.Z-darwin-x64.tar.gz`    |
+| Linux x86_64                      | `unveil-vX.Y.Z-linux-x64.tar.gz`     |
+| Linux arm64                       | `unveil-vX.Y.Z-linux-arm64.tar.gz`   |
 
-### Requirements
-
-- An API key for at least one provider (Anthropic, OpenAI, or Google)
-- Python 3.10+ for ML features (probes, activations, SAE)
-- 8GB+ RAM recommended (16GB+ for larger models)
-
-## What it does
-
-[un]veil is a terminal-native research assistant that combines LLM reasoning with direct access to model internals:
-
-**Research mode** — Run mechanistic interpretability experiments autonomously. The agent loads models, probes residual streams, patches activations, analyses attention heads, and logs findings — following a structured experimental protocol with causal evidence requirements (L4+).
-
-**Programming mode** — A full-featured coding assistant with file editing, code search, git integration, AI-powered commits and PR descriptions, security reviews, and refactoring suggestions.
-
-**Kaggle mode** — Competition-oriented workflows with feature engineering, cross-validation, ensemble strategies, and leaderboard tracking.
-
-### Key features
-
-- **Autonomous research** — Run N experiments without human input. Background mode lets you keep working while experiments stream results live.
-- **Web search** — Grounded in current literature. 3-tier fallback: Anthropic native → Tavily → DuckDuckGo. ArXiv search for papers.
-- **Hardware-aware model loading** — Detects your RAM/VRAM and loads compatible models automatically.
-- **Multi-provider** — Anthropic, OpenAI, Google, Cerebras, or your own local/Tailscale server.
-- **20+ themes** — Catppuccin, Dracula, Nord, Tokyo Night, Gruvbox, Rose Pine, and more.
-- **Session persistence** — Save, resume, and fork research sessions.
-- **Paper generation** — Export findings as ArXiv-ready LaTeX.
-- **Mid-run steering** — Inject instructions while the agent is thinking.
-- **Triggers** — `/cron` and `/watch` fire the agent automatically on a schedule or when a file changes.
-- **Skills** — Installable slash-command extensions. Prompt-based (`~/.unveil/skills/*.md`) or code-based (directory with `skill.json`).
-- **MCP server** — Expose all [un]veil tools to any MCP-compatible client (`veil-mcp` binary, stdio transport).
-- **Setup wizard** — `/wizard` checks every dependency and prints exact fix instructions.
-
-## Usage
+### Homebrew (macOS)
 
 ```bash
-# Start [un]veil
-unveil
-
-# Set your provider
-/set-provider anthropic/claude-sonnet-4-20250514
-
-# Load a model for interpretability research
-/load bigscience/bloom-560m
-
-# Run a probe
-/probe layer=4
-
-# Run autonomous experiments
-/run-autonomous 10
-
-# Get help
-/help
+brew install own-path/unveil/unveil
 ```
 
-## Commands
+## Requirements
 
-| Command | Description |
-|---------|-------------|
-| `/load` | Load a HuggingFace model |
-| `/probe` | Linear probe on residual stream |
-| `/patch` | Patch activations across languages |
-| `/heads` | Attention head patterns |
-| `/circuits` | Path patching / circuit analysis |
-| `/sae` | Sparse autoencoder decomposition |
-| `/sim` | Cross-lingual similarity matrix |
-| `/logit-lens` | Unembed residual stream per layer |
-| `/run-autonomous` | Run N experiments autonomously |
-| `/run-research` | Full autonomous research run |
-| `/write-paper` | Generate ArXiv-ready paper |
-| `/commit` | AI commit message + git commit |
-| `/review` | AI code review |
-| `/cron` | Fire agent on a repeating interval (e.g. `30m`, `1h`) |
-| `/watch` | Fire agent when a file changes |
-| `/triggers` | List active triggers |
-| `/daemon` | Install / manage background services |
-| `/wizard` | Full setup check with fix instructions |
-| `/skills` | List / install / invoke skill extensions |
-| `/doctor` | Health check |
-| `/help` | Full command reference |
+- **API key** for at least one LLM provider: Anthropic, OpenAI, Google, or Cerebras.
+- **Python 3.10+** — required only if you use the machine-learning tools (model loading, probes, activation analysis). The base terminal runs without it.
+- **RAM** — 8 GB minimum; 16 GB+ recommended for loading larger transformer models.
+- **Network** — outbound HTTPS to your chosen provider and (optionally) HuggingFace for model downloads.
 
-## Contributing
+### Optional: ML toolchain
 
-[un]veil is not open source. This repository provides release binaries and documentation. If you're interested in contributing or have feedback, open an issue.
+The ML tools (probes, activation patching, attention analysis, SAE decomposition) depend on PyTorch and TransformerLens. Install them once:
+
+```bash
+unveil setup ml
+```
+
+This creates an isolated Python environment under `~/.local/share/unveil/.venv`. Without this step, ML commands will tell you what to run and then exit cleanly — they won't crash.
+
+## Quick start
+
+```bash
+# Launch
+unveil
+
+# Pick a provider (one-time)
+/set-provider anthropic/claude-opus-4-7
+
+# Pose a research question and let it run
+/research does Llama-3 share positional subspaces across English and French?
+```
+
+That one command is the full lifecycle: it seeds the research plan, iterates experiments on its own, clusters findings, grades evidence, and writes an ArXiv-ready paper when it's confident it has something to say. Hit `Ctrl+C` any time to stop.
+
+For one-shot use without the autonomous loop, drop into `general` or `kaggle` mode:
+
+```bash
+/set-mode general         # coding assistant
+/set-mode kaggle          # competition workflows
+```
+
+## Modes
+
+| Mode      | For                                                    |
+|-----------|--------------------------------------------------------|
+| `research`| Mechanistic interpretability experiments & papers.     |
+| `general` | Programming, code review, refactoring, PRs.            |
+| `kaggle`  | Feature engineering, cross-validation, ensembles.      |
+
+## Remote access (optional)
+
+[un]veil can stay running in the background and be steered from chat. This is useful for long autonomous runs — start the work at your desk, check in from your phone.
+
+Supported platforms: **Telegram**, **Discord**, **Slack**.
+
+1. Start the background service:
+
+   ```bash
+   unveil serve
+   ```
+
+2. Drop your bot token into the appropriate file, e.g. for Telegram:
+
+   ```bash
+   mkdir -p ~/.unveil/adapters
+   echo 'YOUR_BOT_TOKEN' > ~/.unveil/adapters/telegram.token
+   chmod 600 ~/.unveil/adapters/telegram.token
+   ```
+
+3. Authorise yourself in `~/.unveil/gateway/users.toml`:
+
+   ```toml
+   [[user]]
+   platform = "telegram"
+   id       = "123456789"     # your Telegram numeric user id
+   name     = "you"
+   ```
+
+4. Launch the adapter:
+
+   ```bash
+   unveil adapter telegram
+   ```
+
+5. Message the bot:
+
+   ```
+   status                              # summary of the current run
+   @ml-project focus on layer 12       # steer a specific session by name
+   runs                                # list all active runs
+   stop                                # stop the current run
+   ```
+
+Named sessions (the `@ml-project` form) line up with the session names you see in the TUI — start a session in one place, address it by name from anywhere.
+
+Remote access never binds a public port. Chat adapters connect outbound to their platform; the local gateway is on a Unix socket (plus an optional loopback-only TCP port gated by a bearer token). For off-LAN access, put the host on Tailscale or SSH-tunnel — not a public IP.
+
+## Usage tips
+
+- **`/wizard`** — full setup check with copy-paste fix instructions for anything missing.
+- **`/doctor`** — quick health probe (provider reachable, API key valid, ML env present).
+- **`/help`** — complete command reference, grouped by topic.
+- **`/set-theme`** — 20+ themes. Try `catppuccin`, `dracula`, `nord`, `tokyo-night`, `rose-pine`.
+- **Mid-run steering** — while the agent is thinking, just start typing. Your text is injected as guidance at the next safe boundary.
+
+## Uninstall
+
+```bash
+rm -f ~/.local/bin/unveil
+rm -rf ~/.local/share/unveil
+rm -rf ~/.unveil          # config, sessions, tokens — keep this if you plan to reinstall
+```
+
+## Support
+
+- **Issues / feedback:** open an issue on this repo.
+- **Security concerns:** email security@4thwall.dev — please do not file a public issue.
 
 ## License
 
