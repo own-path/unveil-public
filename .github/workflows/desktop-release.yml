@@ -351,7 +351,10 @@ jobs:
           # The source repository's notes say downloads need repository access; here they don't.
           sed 's/^This repository is private\. Downloads require repository access; no redistribution rights are granted\.$/Source code is not included. No redistribution rights are granted./' \
             docs/release-notes-install.md > "$RUNNER_TEMP/notes.md"
-          ! grep -q 'Downloads require repository access' "$RUNNER_TEMP/notes.md"
+          if grep -q 'Downloads require repository access' "$RUNNER_TEMP/notes.md"; then
+            echo '::error::Release notes still say downloads need repository access.'
+            exit 1
+          fi
       - name: Publish the complete release
         working-directory: source
         env:
