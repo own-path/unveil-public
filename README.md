@@ -1,168 +1,164 @@
-```
- ███╗██╗   ██╗███╗   ██╗███╗██╗   ██╗███████╗██╗██╗
- ██╔╝██║   ██║████╗  ██║╚██║██║   ██║██╔════╝██║██║
- ██║ ██║   ██║██╔██╗ ██║ ██║██║   ██║█████╗  ██║██║
- ██║ ██║   ██║██║╚██╗██║ ██║╚██╗ ██╔╝██╔══╝  ██║██║
- ███╗╚██████╔╝██║ ╚████║███║ ╚████╔╝ ███████╗██║███████╗
- ╚══╝ ╚═════╝ ╚═╝  ╚═══╝╚══╝ ╚═══╝  ╚══════╝╚═╝╚══════╝
-```
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/unveil-lockup-reversed.svg">
+    <img src="docs/images/unveil-lockup.svg" alt="Unveil" width="200">
+  </picture>
+  <h3>See inside intelligence.</h3>
+  <p>A research workspace for investigating model behavior.<br>
+  Ask a question, run the experiments, and keep a record of what was tried and what it showed.</p>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/unveil-conversation-dark.jpg">
+    <img src="docs/images/unveil-conversation.jpg" alt="A research conversation in Unveil: results cite the record, and the live research panel beside it counts papers, passages, claims, hypotheses, runs and evidence" width="100%">
+  </picture>
+  <p>
+    <b><a href="#download">Download →</a></b> ·
+    <a href="#get-started">Get started</a> ·
+    <a href="#questions">Questions</a>
+  </p>
+</div>
 
-**An autonomous research terminal for mechanistic interpretability.**
+**Unveil is where a model-behavior question turns into evidence you can audit.** Ask it like you'd
+ask a colleague. An agent reads the literature, states a hypothesis, commits a plan, runs the
+experiment on your machine or your GPUs, and keeps everything as a typed record, so any claim can be
+traced back through its runs and plans to the question that asked for it.
 
-[un]veil loads transformer models, runs experiments on their internals, and writes up the results — with minimal human involvement.
+This repository hosts Unveil's public downloads. The source code is not published here.
 
----
+## Download
 
-## Desktop app
+Get the installer for your platform from the [latest release](https://github.com/own-path/unveil-public/releases/latest).
 
-Download the installer for your platform from the [latest release](https://github.com/own-path/unveil-public/releases/latest):
-`Unveil-macos-arm64.dmg`, `Unveil-macos-x64.dmg`, `Unveil-linux-x64.deb`, `Unveil-linux-x64.AppImage`
-or `Unveil-windows-x64-setup.exe`. `SHA256SUMS.txt` lists their checksums. The app updates itself
-from signed packages published with each release.
+| Platform | Download | Install |
+| --- | --- | --- |
+| macOS, Apple Silicon | [Unveil-macos-arm64.dmg](https://github.com/own-path/unveil-public/releases/latest/download/Unveil-macos-arm64.dmg) | Open the disk image and drag Unveil to Applications. |
+| macOS, Intel | [Unveil-macos-x64.dmg](https://github.com/own-path/unveil-public/releases/latest/download/Unveil-macos-x64.dmg) | Open the disk image and drag Unveil to Applications. |
+| Linux x86_64 (Debian, Ubuntu) | [Unveil-linux-x64.deb](https://github.com/own-path/unveil-public/releases/latest/download/Unveil-linux-x64.deb) | `sudo apt install ./Unveil-linux-x64.deb` |
+| Linux x86_64 (AppImage) | [Unveil-linux-x64.AppImage](https://github.com/own-path/unveil-public/releases/latest/download/Unveil-linux-x64.AppImage) | `chmod +x Unveil-linux-x64.AppImage`, then run it. |
+| Windows x86_64 | [Unveil-windows-x64-setup.exe](https://github.com/own-path/unveil-public/releases/latest/download/Unveil-windows-x64-setup.exe) | Run the installer. It installs for the current user. |
 
-## Install the CLI
-
-One-line install for macOS and Linux:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/own-path/unveil-public/main/install.sh | bash
-```
-
-The installer picks the right archive for your platform, verifies the signature (if `cosign` is on your PATH), extracts to `~/.local/share/unveil/`, and symlinks the `unveil` binary into `~/.local/bin/`.
-
-Alternatively, download the archive manually from [Releases](https://github.com/own-path/unveil-public/releases) and run the bundled `install.sh`.
-
-### Platforms
-
-| Platform                          | Archive                              |
-|-----------------------------------|--------------------------------------|
-| macOS Apple Silicon (M1–M4)       | `unveil-vX.Y.Z-darwin-arm64.tar.gz`  |
-| macOS Intel                       | `unveil-vX.Y.Z-darwin-x64.tar.gz`    |
-| Linux x86_64                      | `unveil-vX.Y.Z-linux-x64.tar.gz`     |
-| Linux arm64                       | `unveil-vX.Y.Z-linux-arm64.tar.gz`   |
-
-### Homebrew (macOS)
+[SHA256SUMS.txt](https://github.com/own-path/unveil-public/releases/latest/download/SHA256SUMS.txt)
+lists a checksum for every file. To check a download:
 
 ```bash
-brew install own-path/unveil/unveil
+shasum -a 256 -c SHA256SUMS.txt --ignore-missing   # macOS
+sha256sum -c SHA256SUMS.txt --ignore-missing       # Linux
 ```
 
-## Requirements
+**The first launch may need your approval.** The macOS app is not yet notarized and the Windows
+installer is not yet code-signed, so the system warns you once:
 
-- **API key** for at least one LLM provider: Anthropic, OpenAI, Google, or Cerebras.
-- **Python 3.10+** — required only if you use the machine-learning tools (model loading, probes, activation analysis). The base terminal runs without it.
-- **RAM** — 8 GB minimum; 16 GB+ recommended for loading larger transformer models.
-- **Network** — outbound HTTPS to your chosen provider and (optionally) HuggingFace for model downloads.
+- **macOS:** if Unveil "can't be opened", open System Settings → Privacy & Security, scroll to the
+  message about Unveil and choose **Open Anyway**.
+- **Windows:** if SmartScreen stops the installer, choose **More info**, then **Run anyway**.
+- **Linux:** the app needs the WebKitGTK 4.1 runtime and a desktop session. The AppImage may also
+  need FUSE support from your distribution.
 
-### Optional: ML toolchain
+**Updates come to you.** Unveil checks this repository's releases for new versions and shows when
+one is ready; you choose when to install it. Every update package is signed, and the app checks the
+signature against the key built into it before installing.
 
-The ML tools (probes, activation patching, attention analysis, SAE decomposition) depend on PyTorch and TransformerLens. Install them once:
+## Get started
+
+1. **Open Unveil.** It starts its own research harness, so there's nothing else to install or
+   run. Your research is kept in `~/Unveil` (your home folder) until you open another folder.
+2. **Give it a model.** Sign in to an agent CLI you already use (Claude Code, Codex, Cursor or
+   OpenCode; Settings shows which ones it found and how to sign in), add an API key for a model
+   provider, or connect a local open-weights server such as LM Studio or Ollama. Keys are stored in
+   your operating system's keychain.
+3. **Ask a question.** Start small and checkable, for example *"Is 2^61 − 1 prime?"*, and look at
+   the record it leaves.
+
+Experiments on models run in Python on your machine. They need Python 3.10 or newer (3.11
+recommended) and optional ML packages.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/unveil-home-dark.jpg">
+    <img src="docs/images/unveil-home.jpg" alt="New research: the Unveil mark, See inside intelligence, and a composer asking What do you want to find out?" width="100%">
+  </picture>
+</p>
+
+## What it does
+
+- **A record, not a chat log.** Questions, hypotheses, plans, runs, evidence and claims are kept as
+  linked records on your disk. Refer to any of them in the conversation, as `@H2` or `@EXP4`.
+- **Experiments that leave evidence.** Each run gets a fresh interpreter, its own directory and seed,
+  and records its metrics, per-example scores, files and environment.
+- **The plan comes first.** A plan is committed before its run, and a run can't be edited after.
+  "It improved" is answered with an interval, not a single number.
+- **Long work doesn't block you.** Runs survive the app quitting, background helpers report back
+  when they finish, and a campaign can keep working one question for hours or days.
+- **Your models, your tools.** Model APIs, a ChatGPT plan, local models or an agent CLI you already
+  use. Connect MCP servers to give the agent your own tools and data.
+
+**Follow the evidence.** Every record is linked to what it rests on. Select one and its whole trail
+lights up, back to the question and forward to the findings.
+
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/images/unveil-graph-dark.jpg">
+    <img src="docs/images/unveil-graph.jpg" alt="The provenance graph: a question, a paper, a hypothesis, a plan, two runs and two findings, linked left to right" width="100%">
+  </picture>
+</p>
+
+<table>
+  <tr>
+    <td width="50%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/images/unveil-library-dark.jpg">
+        <img src="docs/images/unveil-library.jpg" alt="The Library: hypotheses, plans, runs, evidence and papers with their status">
+      </picture>
+      <p><b>The Library.</b> Every hypothesis, plan, run, piece of evidence and paper, filterable by
+      kind. Something still needing review says so.</p>
+    </td>
+    <td width="50%">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/images/unveil-agents-dark.jpg">
+        <img src="docs/images/unveil-agents.jpg" alt="Customize: the agent CLIs Unveil found on this machine and how to install the rest">
+      </picture>
+      <p><b>Agents and tools.</b> The agent CLIs Unveil found on this machine, whether they are
+      ready, and how to install the rest.</p>
+    </td>
+  </tr>
+</table>
+
+<p align="center"><sub>Screenshots use the app's sample workspace, so their numbers are illustrative.</sub></p>
+
+## Questions
+
+**What does it cost?** Unveil doesn't sell tokens. You pay your model provider, use a plan or CLI
+you already have, or run local models for free. The Usage page shows what each research spent.
+
+**Does my research leave my machine?** The record stays on your disk. What you ask goes to the
+model provider you chose.
+
+**Do I need a GPU?** No. Small models run locally. For bigger ones, point Unveil at your GPU
+machines.
+
+**Does it work on Windows?** The app runs on Windows with the agent CLI providers. Local research
+experiments currently need macOS or Linux.
+
+**Why do I see "Veil" in places?** It's the project's earlier name.
+
+## Terminal app (2026.4)
+
+The April 2026 terminal release is still available for macOS and Linux:
 
 ```bash
-unveil setup ml
+curl -fsSL https://raw.githubusercontent.com/own-path/unveil-public/main/install.sh | sh
 ```
 
-This creates an isolated Python environment under `~/.local/share/unveil/.venv`. Without this step, ML commands will tell you what to run and then exit cleanly — they won't crash.
-
-## Quick start
-
-```bash
-# Launch
-unveil
-
-# Pick a provider (one-time)
-/set-provider anthropic/claude-opus-4-7
-
-# Pose a research question and let it run
-/research does Llama-3 share positional subspaces across English and French?
-```
-
-That one command is the full lifecycle: it seeds the research plan, iterates experiments on its own, clusters findings, grades evidence, and writes an ArXiv-ready paper when it's confident it has something to say. Hit `Ctrl+C` any time to stop.
-
-For one-shot use without the autonomous loop, drop into `general` or `kaggle` mode:
-
-```bash
-/set-mode general         # coding assistant
-/set-mode kaggle          # competition workflows
-```
-
-## Modes
-
-| Mode      | For                                                    |
-|-----------|--------------------------------------------------------|
-| `research`| Mechanistic interpretability experiments & papers.     |
-| `general` | Programming, code review, refactoring, PRs.            |
-| `kaggle`  | Feature engineering, cross-validation, ensembles.      |
-
-## Remote access (optional)
-
-[un]veil can stay running in the background and be steered from chat. This is useful for long autonomous runs — start the work at your desk, check in from your phone.
-
-Supported platforms: **Telegram**, **Discord**, **Slack**.
-
-1. Start the background service:
-
-   ```bash
-   unveil serve
-   ```
-
-2. Drop your bot token into the appropriate file, e.g. for Telegram:
-
-   ```bash
-   mkdir -p ~/.unveil/adapters
-   echo 'YOUR_BOT_TOKEN' > ~/.unveil/adapters/telegram.token
-   chmod 600 ~/.unveil/adapters/telegram.token
-   ```
-
-3. Authorise yourself in `~/.unveil/gateway/users.toml`:
-
-   ```toml
-   [[user]]
-   platform = "telegram"
-   id       = "123456789"     # your Telegram numeric user id
-   name     = "you"
-   ```
-
-4. Launch the adapter:
-
-   ```bash
-   unveil adapter telegram
-   ```
-
-5. Message the bot:
-
-   ```
-   status                              # summary of the current run
-   @ml-project focus on layer 12       # steer a specific session by name
-   runs                                # list all active runs
-   stop                                # stop the current run
-   ```
-
-Named sessions (the `@ml-project` form) line up with the session names you see in the TUI — start a session in one place, address it by name from anywhere.
-
-Remote access never binds a public port. Chat adapters connect outbound to their platform; the local gateway is on a Unix socket (plus an optional loopback-only TCP port gated by a bearer token). For off-LAN access, put the host on Tailscale or SSH-tunnel — not a public IP.
-
-## Usage tips
-
-- **`/wizard`** — full setup check with copy-paste fix instructions for anything missing.
-- **`/doctor`** — quick health probe (provider reachable, API key valid, ML env present).
-- **`/help`** — complete command reference, grouped by topic.
-- **`/set-theme`** — 20+ themes. Try `catppuccin`, `dracula`, `nord`, `tokyo-night`, `rose-pine`.
-- **Mid-run steering** — while the agent is thinking, just start typing. Your text is injected as guidance at the next safe boundary.
-
-## Uninstall
-
-```bash
-rm -f ~/.local/bin/unveil
-rm -rf ~/.local/share/unveil
-rm -rf ~/.unveil          # config, sessions, tokens — keep this if you plan to reinstall
-```
+It installs the newest terminal release (currently
+[v2026.4.25](https://github.com/own-path/unveil-public/releases/tag/v2026.4.25)) into
+`~/.local/share/unveil` and links `unveil` into `~/.local/bin`, without `sudo`. Remove it with
+`rm -rf ~/.local/bin/unveil ~/.local/share/unveil`. The desktop app above is where new work happens.
 
 ## Support
 
-- **Issues / feedback:** open an issue on this repo.
-- **Security concerns:** email security@4thwall.dev — please do not file a public issue.
+- **Problems and feedback:** open an issue in this repository.
+- **Security reports:** email security@4thwall.dev rather than filing a public issue.
 
 ## License
 
-Proprietary — 4thWall Labs. All rights reserved.
+Proprietary, 4thWall Labs. All rights reserved. The downloads are provided for your own use; no
+redistribution rights are granted. See [LICENSE](LICENSE).
