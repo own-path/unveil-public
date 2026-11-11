@@ -78,8 +78,11 @@ http_get_str() {
 }
 
 latest_version() {
-  http_get_str "https://api.github.com/repos/${REPO}/releases/latest" \
-    | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' | head -n1
+  # The newest CLI archive release (vX.Y.Z). Desktop app releases (desktop-v*)
+  # become the repository's "latest" but carry installers, not these archives.
+  # The API lists published releases newest first.
+  http_get_str "https://api.github.com/repos/${REPO}/releases?per_page=100" \
+    | sed -n 's/.*"tag_name": *"\(v[^"]*\)".*/\1/p' | head -n1
 }
 
 # ─── Main ─────────────────────────────────────────────────────────────────────

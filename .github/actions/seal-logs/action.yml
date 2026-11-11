@@ -1,0 +1,24 @@
+name: Seal release logs
+description: Encrypt this job's private build logs and keep them as a short-lived artifact.
+inputs:
+  name:
+    description: Artifact name suffix
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Encrypt logs
+      shell: bash
+      run: |
+        set -euo pipefail
+        logs="${RUNNER_TEMP//\\//}/release-logs"
+        out="${RUNNER_TEMP//\\//}/sealed-logs"
+        mkdir -p "$logs" "$out"
+        tar -czf "$out/logs.tar.gz" -C "$logs" .
+        node public/.github/release/encrypt-logs.mjs public/.github/release/logs-key.pub.pem "$out/logs.tar.gz" "$out/logs-${{ inputs.name }}.enc.json"
+        rm -f "$out/logs.tar.gz"
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+      with:
+        name: logs-${{ inputs.name }}
+        path: ${{ runner.temp }}/sealed-logs/logs-${{ inputs.name }}.enc.json
+        retention-days: 7

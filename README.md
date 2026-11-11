@@ -13,7 +13,14 @@
 
 ---
 
-## Install
+## Desktop app
+
+Download the installer for your platform from the [latest release](https://github.com/own-path/unveil-public/releases/latest):
+`Unveil-macos-arm64.dmg`, `Unveil-macos-x64.dmg`, `Unveil-linux-x64.deb`, `Unveil-linux-x64.AppImage`
+or `Unveil-windows-x64-setup.exe`. `SHA256SUMS.txt` lists their checksums. The app updates itself
+from signed packages published with each release.
+
+## Install the CLI
 
 One-line install for macOS and Linux:
 

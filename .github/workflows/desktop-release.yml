@@ -1,0 +1,402 @@
+# Builds and publishes the Unveil desktop app from a tag in the private source
+# repository (own-path/unveil), on this public repository's free standard runners.
+#
+# Trust boundary
+# - Manual dispatch only. No pull_request or pull_request_target trigger exists, so
+#   code from forks never runs here, and never with these secrets.
+# - The source is fetched with a read-only deploy key and is never committed or
+#   uploaded here; only the finished installers are published.
+# - This repository's logs are public. Build and test output goes to encrypted
+#   per-job artifacts (see .github/release/quiet.sh); public logs show pass/fail.
+# - No caches: a public repository's caches can be restored by workflows in pull
+#   requests, which would hand out compiled private code.
+# - Every third-party action is pinned to a commit.
+#
+# Canonical copy: deploy/public-release/ in the source repository. Change both.
+name: Desktop release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing desktop-vX.Y.Z tag in the private source repository
+        required: true
+        type: string
+
+concurrency:
+  group: desktop-release-${{ inputs.tag }}
+  cancel-in-progress: false
+
+permissions: {}
+
+env:
+  SOURCE_REPO: own-path/unveil
+  BUN_VERSION: '1.2.21'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.source.outputs.tag }}
+      commit: ${{ steps.source.outputs.commit }}
+      version: ${{ steps.source.outputs.version }}
+    steps:
+      - name: Require a release tag name
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          [[ "$TAG" =~ ^desktop-v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Expected desktop-vX.Y.Z, got '$TAG'"; exit 1; }
+      - name: Require signing and source access
+        env:
+          SIGNING_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          DEPLOY_KEY: ${{ secrets.UNVEIL_SOURCE_DEPLOY_KEY }}
+          PUBKEY: ${{ vars.TAURI_UPDATER_PUBKEY }}
+          FEED: ${{ vars.UNVEIL_UPDATE_FEED }}
+        run: |
+          test -n "$SIGNING_KEY" && test -n "$PUBKEY" || { echo '::error::Desktop releases require updater signing keys.'; exit 1; }
+          test -n "$DEPLOY_KEY" || { echo '::error::UNVEIL_SOURCE_DEPLOY_KEY is required to read the source.'; exit 1; }
+          test "$FEED" = "https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/latest.json" || {
+            echo '::error::UNVEIL_UPDATE_FEED must be this repository'"'"'s latest.json.'; exit 1; }
+      - name: Refuse an already published release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft > draft.txt 2>/dev/null; then
+            test "$(cat draft.txt)" = true || { echo "::error::$TAG is already published here; release a new version."; exit 1; }
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: ${{ env.SOURCE_REPO }}
+          ref: refs/tags/${{ inputs.tag }}
+          ssh-key: ${{ secrets.UNVEIL_SOURCE_DEPLOY_KEY }}
+          persist-credentials: false
+          path: source
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 22
+      - name: Validate tag and all version files
+        id: source
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          node source/desktop/scripts/check-release-version.mjs "$TAG" > /dev/null
+          offenders=$(git -C source ls-files | grep -cE '^(rust/target/|dist/|node_modules/)|(^|/)\.DS_Store$' || true)
+          test "$offenders" = 0 || { echo '::error::Build output or OS noise is tracked in the source.'; exit 1; }
+          {
+            echo "tag=$TAG"
+            echo "version=${TAG#desktop-v}"
+            echo "commit=$(git -C source rev-parse HEAD)"
+          } >> "$GITHUB_OUTPUT"
+          echo "Release $TAG from source commit $(git -C source rev-parse HEAD)"
+
+  typescript:
+    name: Harness checks
+    needs: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          path: public
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: ${{ env.SOURCE_REPO }}
+          ref: ${{ needs.validate.outputs.commit }}
+          ssh-key: ${{ secrets.UNVEIL_SOURCE_DEPLOY_KEY }}
+          persist-credentials: false
+          path: source
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      # The research harness runs experiments in real Python subprocesses.
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Typecheck, tests, bundle and end-to-end smoke tests
+        working-directory: source
+        run: |
+          source ../public/.github/release/quiet.sh
+          quiet "Install harness dependencies" bun install --frozen-lockfile
+          quiet "Typecheck" bun run typecheck
+          quiet "Typecheck tests" bun run typecheck:tests
+          quiet "Image for the sandbox test" bash -c 'docker pull -q python:3.12-slim || echo "no image; the real-container test will be skipped"'
+          quiet "Unit tests" bun run test
+          quiet "Bundle check" bun build src/cli.tsx --target bun --outdir dist/ci
+          # The same end-to-end smoke test the source CI runs, taken from the tagged ci.yml.
+          awk '/cat > ci-smoke.ts <<.TS./{f=1;next} f&&/^ *TS$/{exit} f{sub(/^          /,"");print}' .github/workflows/ci.yml > ci-smoke.ts
+          test -s ci-smoke.ts || { echo '::error::Could not find the harness smoke test in ci.yml'; exit 1; }
+          quiet "Parallel hypotheses, shared graph, grading, scheduling" bun run ci-smoke.ts
+          quiet "Helper survives a kill -9 of the harness" env STALE=20 LEASE=10 bash scripts/helper-crash-test/run.sh
+          quiet "Campaign wakes on a helper's report" env HOLD=15 bash scripts/campaign-wake-test/run.sh
+      - if: always()
+        uses: ./public/.github/actions/seal-logs
+        with:
+          name: harness
+
+  native:
+    name: Rust and Python checks
+    needs: validate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          path: public
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: ${{ env.SOURCE_REPO }}
+          ref: ${{ needs.validate.outputs.commit }}
+          ssh-key: ${{ secrets.UNVEIL_SOURCE_DEPLOY_KEY }}
+          persist-credentials: false
+          path: source
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          components: clippy
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - name: Python, Rust workspace and release binaries
+        working-directory: source
+        run: |
+          source ../public/.github/release/quiet.sh
+          quiet "Python unit tests" python -m unittest discover -s python/tests -v
+          quiet "Rust clippy" bash -c 'cd rust && cargo clippy --workspace --all-targets -- -D warnings'
+          quiet "Rust tests" bash -c 'cd rust && cargo test --workspace'
+          quiet "Build Rust binaries" bash -c 'cd rust && cargo build --release'
+          quiet "Install harness dependencies" bun install --frozen-lockfile
+          quiet "Build Bun binaries" bash -c 'bun build src/cli.tsx --compile --outfile dist/unveil-ui && bun build src/workers/gateway_runner.ts --compile --outfile dist/unveil-worker'
+          missing=0
+          for b in rust/target/release/unveil rust/target/release/unveil-session rust/target/release/unveil-ipc rust/target/release/unveil-gateway dist/unveil-ui dist/unveil-worker; do
+            test -f "$b" || { echo "::error::missing binary: $b"; missing=1; }
+          done
+          test "$missing" = 0
+          echo "All six binaries present."
+      - if: always()
+        uses: ./public/.github/actions/seal-logs
+        with:
+          name: native
+
+  installers:
+    name: ${{ matrix.platform }} installer
+    needs: [validate, typescript, native]
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-arm64
+            runner: macos-15
+            target: aarch64-apple-darwin
+            bundles: app
+          - platform: macos-x64
+            runner: macos-15-intel
+            target: x86_64-apple-darwin
+            bundles: app
+          - platform: linux-x64
+            runner: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            bundles: deb,appimage
+          - platform: windows-x64
+            runner: windows-2022
+            target: x86_64-pc-windows-msvc
+            bundles: nsis
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          path: public
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: ${{ env.SOURCE_REPO }}
+          ref: ${{ needs.validate.outputs.commit }}
+          ssh-key: ${{ secrets.UNVEIL_SOURCE_DEPLOY_KEY }}
+          persist-credentials: false
+          path: source
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 22
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          targets: ${{ matrix.target }}
+          components: clippy, rustfmt
+      - name: Checks
+        working-directory: source
+        run: |
+          source ../public/.github/release/quiet.sh
+          if [ "$RUNNER_OS" = Linux ]; then quiet "Linux system dependencies" bash desktop/scripts/install-linux-deps.sh; fi
+          quiet "Install harness dependencies" bun install --frozen-lockfile
+          quiet "Install desktop dependencies" npm ci --prefix desktop
+          quiet "Validate desktop versions" node desktop/scripts/check-release-version.mjs
+          quiet "Release tooling tests" node --test desktop/scripts/release-checks.mjs
+          quiet "Frontend checks" npm run check --prefix desktop
+          quiet "Frontend build" npm run build --prefix desktop
+          # generate_context! needs the resources and host-native sidecar even for cargo test.
+          quiet "Prepare bundled harness" node desktop/scripts/build-harness.mjs
+          quiet "cargo fmt" bash -c 'cd desktop/src-tauri && cargo fmt --check'
+          quiet "cargo clippy" bash -c 'cd desktop/src-tauri && cargo clippy --locked --all-targets -- -D warnings'
+          quiet "cargo test" bash -c 'cd desktop/src-tauri && cargo test --locked'
+      - name: Configure signed updates
+        id: updates
+        working-directory: source/desktop
+        env:
+          SIGNING_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          PUBKEY: ${{ vars.TAURI_UPDATER_PUBKEY }}
+          FEED: ${{ vars.UNVEIL_UPDATE_FEED }}
+          PUBLIC_REPO: ${{ github.repository }}
+        run: node scripts/updater-config.mjs >> "$GITHUB_OUTPUT"
+      - name: Build installer
+        working-directory: source/desktop
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''
+          UPDATE_ARGS: ${{ steps.updates.outputs.args }}
+          TARGET: ${{ matrix.target }}
+          BUNDLES: ${{ matrix.bundles }}
+        run: |
+          source ../../public/.github/release/quiet.sh
+          test -n "$UPDATE_ARGS" || { echo '::error::Signed updates are not configured.'; exit 1; }
+          # UPDATE_ARGS is zero or more flags; split it on purpose.
+          read -r -a update_args <<< "$UPDATE_ARGS"
+          quiet "tauri build" npx tauri build --ci --target "$TARGET" --bundles "$BUNDLES" "${update_args[@]}" -- --locked
+          if [ "$RUNNER_OS" = macOS ]; then
+            quiet "Package macOS disk image" bash scripts/package-macos-dmg.sh "src-tauri/target/$TARGET/release/bundle/macos/Unveil.app" "src-tauri/target/$TARGET/release/bundle/dmg/Unveil.dmg"
+          fi
+      - name: Collect installers with stable download names
+        working-directory: source
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          TARGET: ${{ matrix.target }}
+        run: node desktop/scripts/release-assets.mjs collect "$PLATFORM" "$TARGET"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: desktop-${{ matrix.platform }}
+          path: source/release/*
+          if-no-files-found: error
+          retention-days: 1
+      - if: always()
+        uses: ./public/.github/actions/seal-logs
+        with:
+          name: ${{ matrix.platform }}
+
+  publish:
+    needs: [validate, typescript, native, installers]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          path: public
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: ${{ env.SOURCE_REPO }}
+          ref: ${{ needs.validate.outputs.commit }}
+          ssh-key: ${{ secrets.UNVEIL_SOURCE_DEPLOY_KEY }}
+          persist-credentials: false
+          path: source
+          sparse-checkout: |
+            desktop/scripts
+            docs/release-notes-install.md
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: 22
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
+        with:
+          pattern: desktop-*
+          path: source/release
+          merge-multiple: true
+      - name: Generate update feed, verify signatures and the complete asset set
+        working-directory: source
+        env:
+          VERSION: ${{ needs.validate.outputs.version }}
+          TAG: ${{ needs.validate.outputs.tag }}
+          PUBKEY: ${{ vars.TAURI_UPDATER_PUBKEY }}
+        run: |
+          base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}"
+          node desktop/scripts/updater-manifest.mjs release "$VERSION" "$base"
+          test -s release/latest.json || { echo '::error::Desktop releases require a signed update feed.'; exit 1; }
+          node ../public/.github/release/verify-update-signatures.mjs release "$PUBKEY" "$VERSION" "$base"
+          node desktop/scripts/release-assets.mjs manifest
+          ls -l release
+      - name: Release notes
+        working-directory: source
+        run: |
+          # The source repository's notes say downloads need repository access; here they don't.
+          sed 's/^This repository is private\. Downloads require repository access; no redistribution rights are granted\.$/Source code is not included. No redistribution rights are granted./' \
+            docs/release-notes-install.md > "$RUNNER_TEMP/notes.md"
+          ! grep -q 'Downloads require repository access' "$RUNNER_TEMP/notes.md"
+      - name: Publish the complete release
+        working-directory: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.validate.outputs.tag }}
+          VERSION: ${{ needs.validate.outputs.version }}
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft > "$RUNNER_TEMP/draft.txt" 2>/dev/null; then
+            test "$(cat "$RUNNER_TEMP/draft.txt")" = true || { echo "::error::$TAG is already published; release a new version."; exit 1; }
+          else
+            # The tag marks the binary release in this repository; no source is copied.
+            gh release create "$TAG" -R "$GITHUB_REPOSITORY" --draft --target "$GITHUB_SHA" \
+              --title "Unveil $VERSION" --notes-file "$RUNNER_TEMP/notes.md"
+          fi
+          gh release upload "$TAG" -R "$GITHUB_REPOSITORY" release/* --clobber
+          # Publish only once the draft holds exactly the verified files.
+          gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name' | sort > "$RUNNER_TEMP/uploaded.txt"
+          (cd release && printf '%s\n' *) | sort > "$RUNNER_TEMP/expected.txt"
+          diff "$RUNNER_TEMP/expected.txt" "$RUNNER_TEMP/uploaded.txt"
+          gh release edit "$TAG" -R "$GITHUB_REPOSITORY" --notes-file "$RUNNER_TEMP/notes.md" --draft=false --latest
+      - name: Check public downloads without credentials
+        working-directory: source
+        env:
+          TAG: ${{ needs.validate.outputs.tag }}
+          VERSION: ${{ needs.validate.outputs.version }}
+          PUBKEY: ${{ vars.TAURI_UPDATER_PUBKEY }}
+        run: |
+          set -euo pipefail
+          check="$RUNNER_TEMP/public-check"
+          mkdir -p "$check"
+          base="https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}"
+          curl -fsSL --retry 5 --retry-delay 5 -o "$check/latest.json" "https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/latest.json"
+          cmp "$check/latest.json" release/latest.json
+          for path in release/*; do
+            name=$(basename "$path")
+            [ "$name" = latest.json ] && continue
+            curl -fsSL --retry 5 --retry-delay 5 -o "$check/$name" "$base/$name"
+          done
+          node ../public/.github/release/verify-update-signatures.mjs "$check" "$PUBKEY" "$VERSION" "$base"
+          (cd "$check" && sha256sum -c SHA256SUMS.txt)
+      - name: Remove intermediate installer artifacts
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}/artifacts" --paginate --jq '.artifacts[] | select(.name | startswith("desktop-")) | .id' |
+            while read -r id; do gh api -X DELETE "repos/${GITHUB_REPOSITORY}/actions/artifacts/$id"; done
