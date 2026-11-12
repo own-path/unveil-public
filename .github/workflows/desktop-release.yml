@@ -396,8 +396,8 @@ jobs:
           done
           node ../public/.github/release/verify-update-signatures.mjs "$check" "$PUBKEY" "$VERSION" "$base"
           (cd "$check" && sha256sum -c SHA256SUMS.txt)
+      # Only once published: after a failure they stay (1-day retention) for inspection.
       - name: Remove intermediate installer artifacts
-        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
