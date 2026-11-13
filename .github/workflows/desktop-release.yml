@@ -378,13 +378,25 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ needs.validate.outputs.tag }}
           VERSION: ${{ needs.validate.outputs.version }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           set -euo pipefail
+          # Each publish takes --latest, the update feed. An older version finishing after a newer
+          # one (two runs at once) must not roll every app's feed back.
+          newest=$(gh release list -R "$GITHUB_REPOSITORY" --exclude-drafts --limit 100 --json tagName --jq '.[].tagName' \
+            | sed -n 's/^desktop-v//p' | sort -V | tail -n 1)
+          if [ -n "$newest" ] && [ "$(printf '%s\n%s\n' "$newest" "$VERSION" | sort -V | tail -n 1)" != "$VERSION" ]; then
+            echo "::error::Desktop $newest is already published; publishing $VERSION would roll the update feed back."
+            exit 1
+          fi
           if gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft > "$RUNNER_TEMP/draft.txt" 2>/dev/null; then
             test "$(cat "$RUNNER_TEMP/draft.txt")" = true || { echo "::error::$TAG is already published; release a new version."; exit 1; }
           else
-            # The tag marks the binary release in this repository; no source is copied.
-            gh release create "$TAG" -R "$GITHUB_REPOSITORY" --draft --target "$GITHUB_SHA" \
+            # The tag marks the binary release in this repository; no source is copied. It goes on
+            # the default branch's head, not $GITHUB_SHA: if main moved during the run and changed a
+            # workflow file, GitHub refuses a token-created ref at the older commit (HTTP 403;
+            # 0.1.12 failed this way).
+            gh release create "$TAG" -R "$GITHUB_REPOSITORY" --draft --target "$DEFAULT_BRANCH" \
               --title "Unveil $VERSION" --notes-file "$RUNNER_TEMP/notes.md"
           fi
           gh release upload "$TAG" -R "$GITHUB_REPOSITORY" release/* --clobber
