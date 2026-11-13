@@ -6,10 +6,7 @@
   <h3>See inside intelligence.</h3>
   <p>A research workspace for investigating model behavior.<br>
   Ask a question, run the experiments, and keep a record of what was tried and what it showed.</p>
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/unveil-conversation-dark.jpg">
-    <img src="docs/images/unveil-conversation.jpg" alt="A research conversation in Unveil: results cite the record, and the live research panel beside it counts papers, passages, claims, hypotheses, runs and evidence" width="100%">
-  </picture>
+  <img src="docs/images/unveil-conversation-dark.jpg" alt="A research conversation in Unveil: results cite the record, and the live research panel beside it counts papers, passages, claims, hypotheses, runs and evidence" width="100%">
   <p>
     <b><a href="#download">Download →</a></b> ·
     <a href="#get-started">Get started</a> ·
@@ -72,10 +69,8 @@ Experiments on models run in Python on your machine. They need Python 3.10 or ne
 recommended) and optional ML packages.
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/unveil-home-dark.jpg">
-    <img src="docs/images/unveil-home.jpg" alt="New research: the Unveil mark, See inside intelligence, and a composer asking What do you want to find out?" width="100%">
-  </picture>
+  <img src="docs/images/unveil-new-research.webp" alt="New research: the Unveil mark and the composer over a live grid, where signals pass quietly between nodes" width="100%">
+  <br><sub>New research, live (<a href="docs/images/unveil-new-research.mp4">mp4</a>).</sub>
 </p>
 
 ## What it does
@@ -95,27 +90,18 @@ recommended) and optional ML packages.
 lights up, back to the question and forward to the findings.
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/images/unveil-graph-dark.jpg">
-    <img src="docs/images/unveil-graph.jpg" alt="The provenance graph: a question, a paper, a hypothesis, a plan, two runs and two findings, linked left to right" width="100%">
-  </picture>
+  <img src="docs/images/unveil-graph-dark.jpg" alt="The provenance graph: a question, a paper, a hypothesis, a plan, two runs and two findings, linked left to right" width="100%">
 </p>
 
 <table>
   <tr>
     <td width="50%">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/images/unveil-library-dark.jpg">
-        <img src="docs/images/unveil-library.jpg" alt="The Library: hypotheses, plans, runs, evidence and papers with their status">
-      </picture>
+      <img src="docs/images/unveil-library-dark.jpg" alt="The Library: hypotheses, plans, runs, evidence and papers with their status">
       <p><b>The Library.</b> Every hypothesis, plan, run, piece of evidence and paper, filterable by
       kind. Something still needing review says so.</p>
     </td>
     <td width="50%">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/images/unveil-agents-dark.jpg">
-        <img src="docs/images/unveil-agents.jpg" alt="Customize: the agent CLIs Unveil found on this machine and how to install the rest">
-      </picture>
+      <img src="docs/images/unveil-agents-dark.jpg" alt="Customize: the agent CLIs Unveil found on this machine and how to install the rest">
       <p><b>Agents and tools.</b> The agent CLIs Unveil found on this machine, whether they are
       ready, and how to install the rest.</p>
     </td>
