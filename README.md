@@ -10,6 +10,7 @@
   <p>
     <b><a href="#download">Download →</a></b> ·
     <a href="#get-started">Get started</a> ·
+    <a href="#connect-your-research-stack">Integrations</a> ·
     <a href="#questions">Questions</a>
   </p>
 </div>
@@ -54,6 +55,35 @@ installer is not yet code-signed, so the system warns you once:
 one is ready; you choose when to install it. Every update package is signed, and the app checks the
 signature against the key built into it before installing.
 
+## Connect your research stack
+
+Use the model providers, agent subscriptions and compute you already have.
+
+<table align="center">
+  <tr>
+    <td align="center" width="25%"><a href="https://openai.com/"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/integrations/openai-dark.svg"><img src="docs/images/integrations/openai.svg" width="30" height="30" alt="OpenAI / ChatGPT"></picture><br><sub>OpenAI / ChatGPT</sub></a></td>
+    <td align="center" width="25%"><a href="https://claude.ai/"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/integrations/claude-dark.svg"><img src="docs/images/integrations/claude.svg" width="30" height="30" alt="Claude"></picture><br><sub>Claude</sub></a></td>
+    <td align="center" width="25%"><a href="https://gemini.google.com/"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/integrations/gemini-dark.svg"><img src="docs/images/integrations/gemini.svg" width="30" height="30" alt="Gemini"></picture><br><sub>Gemini</sub></a></td>
+    <td align="center" width="25%"><a href="https://openrouter.ai/"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/integrations/openrouter-dark.svg"><img src="docs/images/integrations/openrouter.svg" width="30" height="30" alt="OpenRouter"></picture><br><sub>OpenRouter</sub></a></td>
+  </tr>
+  <tr>
+    <td align="center" width="25%"><a href="https://opencode.ai/"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/integrations/opencode-dark.svg"><img src="docs/images/integrations/opencode.svg" width="30" height="30" alt="OpenCode"></picture><br><sub>OpenCode</sub></a></td>
+    <td align="center" width="25%"><a href="https://cursor.com/"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/integrations/cursor-dark.svg"><img src="docs/images/integrations/cursor.svg" width="30" height="30" alt="Cursor"></picture><br><sub>Cursor</sub></a></td>
+    <td align="center" width="25%"><a href="https://modal.com/"><img src="docs/images/integrations/modal.svg" width="52" height="30" alt="Modal"><br><sub>Modal</sub></a></td>
+    <td align="center" width="25%"><a href="https://huggingface.co/"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/integrations/huggingface-dark.svg"><img src="docs/images/integrations/huggingface.svg" width="30" height="30" alt="Hugging Face"></picture><br><sub>Hugging Face</sub></a></td>
+  </tr>
+</table>
+
+**Models:** OpenAI, Claude, Gemini, OpenRouter, Groq, Cerebras and Hugging Face, plus local
+servers such as Ollama, LM Studio and oMLX.
+
+**Agent sessions:** Codex, Claude Code, OpenCode, Cursor and Antigravity. Foundry can use a
+ChatGPT or Claude subscription lead with bounded free OpenCode workers.
+
+**Compute:** this machine, SSH, Slurm, Kubernetes, Ray, Modal, Hugging Face Jobs, RunPod and Tinker.
+
+Connect models and agent sign-ins in Settings → Providers, and compute in Settings → Connections.
+
 ## Get started
 
 1. **Open Unveil.** It starts its own research harness, so there's nothing else to install or
@@ -85,6 +115,9 @@ recommended) and optional ML packages.
   when they finish, and a campaign can keep working one question for hours or days.
 - **Your models, your tools.** Model APIs, a ChatGPT plan, local models or an agent CLI you already
   use. Connect MCP servers to give the agent your own tools and data.
+- **Cloud compute beside the chat.** Follow remote-run progress and logs in a compact context card,
+  with a separate compute budget, estimated usage and projected cost. Details stay within the card;
+  unknown prices and forecasts stay unknown.
 
 **Follow the evidence.** Every record is linked to what it rests on. Select one and its whole trail
 lights up, back to the question and forward to the findings.
@@ -113,7 +146,9 @@ lights up, back to the question and forward to the findings.
 ## Questions
 
 **What does it cost?** Unveil doesn't sell tokens. You pay your model provider, use a plan or CLI
-you already have, or run local models for free. The Usage page shows what each research spent.
+you already have, or run local models for free. The Usage page shows recorded model spend, with
+unknown prices left unpriced. Cloud jobs are billed separately by the compute provider. The compute
+card currently shows partial GPU-only estimates and a planning budget, not an enforced spending cap.
 
 **Does my research leave my machine?** The record stays on your disk. What you ask goes to the
 model provider you chose.
