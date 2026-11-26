@@ -1,10 +1,11 @@
 <div align="center">
-  <img src="docs/images/unveil-app-icon.svg" alt="" width="128">
-  <h1>Unveil</h1>
-  <h3>See inside intelligence.</h3>
-  <p>A research workspace for investigating model behavior.<br>
-  Ask a question, run the experiments, and keep a record of what was tried and what it showed.</p>
-  <picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/unveil-conversation-dark.jpg"><img src="docs/images/unveil-conversation.jpg" alt="A research conversation in Unveil: the answer cites the record, and the cards beside it show the evidence, the experiment running and recent findings" width="100%"></picture>
+  <picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/readme/header-dark.png"><img src="docs/images/readme/header.png" alt="Unveil, a research workspace built on Deep Agents. See inside intelligence. Beside it, a provenance trail: a question, the hypothesis it raised, the run that tested it, and the evidence that supports it" width="100%"></picture>
+  <p>
+    <a href="https://github.com/own-path/unveil-public/releases/latest"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/readme/badge-desktop-dark.png"><img src="docs/images/readme/badge-desktop.png" alt="Desktop 0.1.45" height="28"></picture></a>
+    <a href="#download"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/readme/badge-runs-on-dark.png"><img src="docs/images/readme/badge-runs-on.png" alt="Runs on macOS, Linux and Windows" height="28"></picture></a>
+    <a href="https://github.com/langchain-ai/deepagents"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/readme/badge-built-on-dark.png"><img src="docs/images/readme/badge-built-on.png" alt="Built on Deep Agents" height="28"></picture></a>
+    <a href="https://tauri.app"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/readme/badge-app-dark.png"><img src="docs/images/readme/badge-app.png" alt="Tauri 2 app" height="28"></picture></a>
+  </p>
   <p>
     <b><a href="#download">Download →</a></b> ·
     <a href="#get-started">Get started</a> ·
@@ -17,6 +18,10 @@
 ask a colleague. An agent reads the literature, states a hypothesis, commits a plan, runs the
 experiment on your machine or your GPUs, and keeps everything as a typed record, so any claim can be
 traced back through its runs and plans to the question that asked for it.
+
+<p align="center">
+  <picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/readme/conversation-dark.png"><img src="docs/images/readme/conversation.png" alt="A research conversation in Unveil: the answer cites the record, and the cards beside it show the evidence, the experiment running and recent findings" width="100%"></picture>
+</p>
 
 This repository hosts Unveil's public downloads. The source code is not published here.
 
@@ -136,7 +141,7 @@ lights up, back to the question and forward to the findings.
 everyone.
 
 <p align="center">
-  <picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/unveil-team-chat-dark.jpg"><img src="docs/images/unveil-team-chat.jpg" alt="A team chat: three researchers and Unveil discuss an ablation; Unveil reports the result with a confidence interval and links it to the record" width="100%"></picture>
+  <picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/readme/team-chat-dark.png"><img src="docs/images/readme/team-chat.png" alt="A team chat: three researchers and Unveil discuss an ablation; Unveil reports the result with a confidence interval and links it to the record" width="100%"></picture>
 </p>
 
 <table>
