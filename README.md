@@ -130,6 +130,12 @@ recommended) and optional ML packages.
   with a separate compute budget, estimated usage and projected cost. Details stay within the card;
   unknown prices and forecasts stay unknown.
 
+<p align="center">
+  <picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/readme/trust-dark.png"><img src="docs/images/readme/trust.png" alt="The same question answered two ways. A chat answer says head 9.9 is clearly important because performance dropped about 60%, with no plan, no interval, no trail and no outside check. Unveil reports the logit difference falling from 3.1 to 1.2 with a 95% interval of 1.0 to 1.4, linked to a plan committed before the run, the saved run, and a signed receipt from a separate evaluator" width="100%"></picture>
+</p>
+
+<p align="center"><sub>Illustrative: the same question as a bare chat answer and as an Unveil record.</sub></p>
+
 **Follow the evidence.** Every record is linked to what it rests on. Select one and its whole trail
 lights up, back to the question and forward to the findings.
 
@@ -179,9 +185,10 @@ experiments currently need macOS or Linux.
 
 **Why do I see "Veil" in places?** It's the project's earlier name.
 
-## Terminal app (2026.4)
+## Older terminal app
 
-The April 2026 terminal release is still available for macOS and Linux:
+Before the desktop app, Unveil shipped as a terminal app. Its last release was in April 2026, and
+it is still available for macOS and Linux, but it no longer gets updates:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/own-path/unveil-public/main/install.sh | sh
