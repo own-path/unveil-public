@@ -1,5 +1,6 @@
 <div align="center">
-  <img src="docs/images/unveil-lockup-on-white.svg" alt="Unveil" width="220">
+  <img src="docs/images/unveil-app-icon.svg" alt="" width="128">
+  <h1>Unveil</h1>
   <h3>See inside intelligence.</h3>
   <p>A research workspace for investigating model behavior.<br>
   Ask a question, run the experiments, and keep a record of what was tried and what it showed.</p>
