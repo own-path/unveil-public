@@ -147,7 +147,7 @@ lights up, back to the question and forward to the findings.
 everyone.
 
 <p align="center">
-  <picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/readme/team-chat-dark.png"><img src="docs/images/readme/team-chat.png" alt="A team chat: three researchers and Unveil discuss an ablation; Unveil reports the result with a confidence interval and links it to the record" width="100%"></picture>
+  <picture><source media="(prefers-color-scheme: dark)" srcset="docs/images/readme/team-chat-replies-dark.png"><img src="docs/images/readme/team-chat-replies.png" alt="A team chat: three researchers and Unveil discuss an ablation; Unveil reports the result with a confidence interval and links it to the record" width="100%"></picture>
 </p>
 
 <table>
